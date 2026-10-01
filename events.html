@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SSE Messages</title>
+  <style>
+    body { max-width: 48rem; margin: 3rem auto; padding: 0 1rem; font: 16px/1.6 system-ui; }
+    li { margin: .5rem 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <h1>SSE Messages</h1>
+  <p id="status" role="status">Connecting...</p>
+  <p>Listening directly to BE1. The latest 100 messages appear below.</p>
+  <ul id="messages" role="log" aria-label="Received messages"></ul>
+
+  <script>
+    const status = document.getElementById("status");
+    const messages = document.getElementById("messages");
+    const source = new EventSource("http://127.0.0.1:8001/events");
+
+    source.onopen = () => { status.textContent = "Connected to BE1"; };
+    source.onerror = () => {
+      status.textContent = source.readyState === EventSource.CLOSED
+        ? "Disconnected. Check BE1 and CORS, then reload this page."
+        : "Unable to connect. Retrying... Check BE1 and CORS if this continues.";
+    };
+    source.onmessage = (event) => {
+      const item = document.createElement("li");
+      item.textContent = event.data;
+      messages.append(item);
+      if (messages.childElementCount > 100) messages.firstElementChild.remove();
+    };
+  </script>
+</body>
+</html>
